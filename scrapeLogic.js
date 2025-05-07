@@ -116,9 +116,11 @@ async function scrapeNews(page) {
     // Load existing data to check for new items
     const existingEnNews = loadExistingData('en');
     const existingUrls = new Set(existingEnNews.map(item => item.url));
-    const newItems = newsItems.filter(item => !existingUrls.has(item.url));
     
-    console.log(`Found ${newItems.length} new items to scrape`);
+    // Filter for new items and limit to the latest 2
+    const newItems = newsItems.filter(item => !existingUrls.has(item.url)).slice(0, 2);
+    
+    console.log(`Found ${newItems.length} new items to scrape (limited to 2)`);
     
     // Process each news item
     for (let i = 0; i < newItems.length; i++) {
@@ -148,7 +150,7 @@ async function scrapeNews(page) {
       }
     }
     
-    return { status: 'success', message: `Scraped ${newItems.length} news items`, data: newsItems };
+    return { status: 'success', message: `Scraped ${newItems.length} news items (limited to 2)`, data: newItems };
   } catch (error) {
     console.error('Error during scraping:', error);
     return { status: 'error', message: `Error during scraping: ${error.message}` };
