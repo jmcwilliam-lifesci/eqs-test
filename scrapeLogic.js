@@ -90,11 +90,21 @@ async function getNewsDetail(page, url, language) {
     
     const content = await page.evaluate(() => {
       const contentElement = document.querySelector('.news-details__content');
-      const headlineElement = document.querySelector('.news-details__title');
+      
+      // Extract only the headline text content (without the company name)
+      // This targets the text content after the <br> tag in the h1
+      let headline = '';
+      const titleElement = document.querySelector('.news-details__title');
+      if (titleElement && titleElement.innerHTML) {
+        const parts = titleElement.innerHTML.split('<br>');
+        if (parts.length > 1) {
+          headline = parts[1].replace(/<[^>]*>/g, '').trim();
+        }
+      }
       
       return {
         content: contentElement ? contentElement.innerHTML : '',
-        headline: headlineElement ? headlineElement.textContent.trim() : ''
+        headline: headline
       };
     });
     
