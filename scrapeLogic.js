@@ -110,7 +110,7 @@ async function scrapeNews(page) {
   try {
     // Load the main news page
     console.log('Loading main news page...');
-    await page.goto('https://www.eqs-news.com/company/curevac/news/db2ecafe-75b1-1014-b5b2-42d716257b19', {
+    await page.goto('https://www.eqs-news.com/company/curevac/news/db2ecefe-75b1-1014-b5b2-42d716257b19', {
       waitUntil: 'networkidle0'
     });
     
