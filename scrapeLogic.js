@@ -90,7 +90,12 @@ async function getNewsDetail(page, url, language) {
     
     const content = await page.evaluate(() => {
       const contentElement = document.querySelector('.news-details__content');
-      return contentElement ? contentElement.innerHTML : '';
+      const headlineElement = document.querySelector('.news-details__title');
+      
+      return {
+        content: contentElement ? contentElement.innerHTML : '',
+        headline: headlineElement ? headlineElement.textContent.trim() : ''
+      };
     });
     
     return content;
@@ -105,7 +110,7 @@ async function scrapeNews(page) {
   try {
     // Load the main news page
     console.log('Loading main news page...');
-    await page.goto('https://www.eqs-news.com/company/curevac/news/db2ecefe-75b1-1014-b5b2-42d716257b19', {
+    await page.goto('https://www.eqs-news.com/company/curevac/news/db2ecafe-75b1-1014-b5b2-42d716257b19', {
       waitUntil: 'networkidle0'
     });
     
@@ -125,12 +130,15 @@ async function scrapeNews(page) {
       
       try {
         // Get English content
-        item.content.en = await getNewsDetail(page, item.url, 'en');
+        const enResult = await getNewsDetail(page, item.url, 'en');
+        item.content.en = enResult.content;
         await sleep(5000); // 5 second delay
         
         // If German version exists, get it too
         if (item.languages.includes('de')) {
-          item.content.de = await getNewsDetail(page, item.url, 'de');
+          const deResult = await getNewsDetail(page, item.url, 'de');
+          item.content.de = deResult.content;
+          item.headlineDE = deResult.headline;
           await sleep(5000);
         }
         
