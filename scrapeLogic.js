@@ -113,32 +113,24 @@ async function scrapeNews(page) {
     const htmlContent = await page.content();
     const newsItems = parseNewsData(htmlContent);
     
-    // Load existing data to check for new items
-    const existingEnNews = loadExistingData('en');
-    const existingUrls = new Set(existingEnNews.map(item => item.url));
+    // Just get the latest 2 items regardless of whether they've been seen before
+    const latestItems = newsItems.slice(0, 2);
     
-    // Filter for new items and limit to the latest 2
-    const newItems = newsItems.filter(item => !existingUrls.has(item.url)).slice(0, 2);
+    console.log(`Found ${latestItems.length} latest items to return`);
     
-    console.log(`Found ${newItems.length} new items to scrape (limited to 2)`);
-    
-    // Process each news item
-    for (let i = 0; i < newItems.length; i++) {
-      const item = newItems[i];
-      console.log(`Processing item ${i + 1} of ${newItems.length}: ${item.headline}`);
+    // Process each news item to get content
+    for (let i = 0; i < latestItems.length; i++) {
+      const item = latestItems[i];
+      console.log(`Processing item ${i + 1} of ${latestItems.length}: ${item.headline}`);
       
       try {
         // Get English content
         item.content.en = await getNewsDetail(page, item.url, 'en');
-        // Save English version immediately
-        saveNewsItem(item, 'en');
         await sleep(5000); // 5 second delay
         
         // If German version exists, get it too
         if (item.languages.includes('de')) {
           item.content.de = await getNewsDetail(page, item.url, 'de');
-          // Save German version immediately
-          saveNewsItem(item, 'de');
           await sleep(5000);
         }
         
@@ -150,7 +142,7 @@ async function scrapeNews(page) {
       }
     }
     
-    return { status: 'success', message: `Scraped ${newItems.length} news items (limited to 2)`, data: newItems };
+    return { status: 'success', message: `Returning ${latestItems.length} latest news items`, data: latestItems };
   } catch (error) {
     console.error('Error during scraping:', error);
     return { status: 'error', message: `Error during scraping: ${error.message}` };
