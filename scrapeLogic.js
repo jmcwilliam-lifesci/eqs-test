@@ -117,15 +117,14 @@ async function scrapeNews(page) {
       try {
         // Get English content
         const enResult = await getNewsDetail(page, item.url, 'en');
-        item.content.en = enResult.content;
-        item.contentDiv = enResult.contentDiv;
+        item.content = {}; // Initialize as empty object
+        item.content.en = enResult.contentDiv; // Set only the contentDiv as the content
         await sleep(5000); // 5 second delay
         
         // If German version exists, get it too
         if (item.languages.includes('de')) {
           const deResult = await getNewsDetail(page, item.url, 'de');
-          item.content.de = deResult.content;
-          item.contentDiv_de = deResult.contentDiv;
+          item.content.de = deResult.contentDiv; // Set only the contentDiv as the content
           item.headlineDE = deResult.headline;
           await sleep(5000);
         }
