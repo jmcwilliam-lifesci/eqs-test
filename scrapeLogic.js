@@ -67,6 +67,14 @@ async function getNewsDetail(page, url, language) {
       // Directly target the specific div we need - the div after the hr in news-details__content
       const contentDiv = document.querySelector('.news-details__content hr + div');
       
+      // Add style="display:none" to the first paragraph in the div
+      if (contentDiv) {
+        const firstParagraph = contentDiv.querySelector('p');
+        if (firstParagraph) {
+          firstParagraph.style.display = 'none';
+        }
+      }
+      
       // Extract only the headline text content (without the company name)
       let headline = '';
       const titleElement = document.querySelector('.news-details__title');
