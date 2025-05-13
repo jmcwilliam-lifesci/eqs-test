@@ -19,33 +19,6 @@ function loadExistingData(language = 'en') {
   return [];
 }
 
-// Function to save a single news item
-function saveNewsItem(item, language = 'en') {
-  const filename = `news_data_${language}.json`;
-  try {
-    // Load current data
-    let currentData = loadExistingData(language);
-    
-    // Remove any existing item with the same URL if it exists
-    currentData = currentData.filter(existing => existing.url !== item.url);
-    
-    // Add the new item
-    currentData.push(item);
-    
-    // Sort by date and time (newest first)
-    currentData.sort((a, b) => {
-      const dateA = new Date(`${a.date} ${a.time}`);
-      const dateB = new Date(`${b.date} ${b.time}`);
-      return dateB - dateA;
-    });
-    
-    // Save back to file
-    fs.writeFileSync(filename, JSON.stringify(currentData, null, 2));
-    console.log(`Updated ${filename} with item: ${item.headline}`);
-  } catch (error) {
-    console.error(`Error saving to ${filename}:`, error);
-  }
-}
 
 // Function to parse the news list HTML
 function parseNewsData(html) {
@@ -91,8 +64,10 @@ async function getNewsDetail(page, url, language) {
     const content = await page.evaluate(() => {
       const contentElement = document.querySelector('.news-details__content');
       
+      // Directly target the specific div we need - the div after the hr in news-details__content
+      const contentDiv = document.querySelector('.news-details__content hr + div');
+      
       // Extract only the headline text content (without the company name)
-      // This targets the text content after the <br> tag in the h1
       let headline = '';
       const titleElement = document.querySelector('.news-details__title');
       if (titleElement && titleElement.innerHTML) {
@@ -104,6 +79,7 @@ async function getNewsDetail(page, url, language) {
       
       return {
         content: contentElement ? contentElement.innerHTML : '',
+        contentDiv: contentDiv ? contentDiv.outerHTML : null,
         headline: headline
       };
     });
@@ -142,12 +118,14 @@ async function scrapeNews(page) {
         // Get English content
         const enResult = await getNewsDetail(page, item.url, 'en');
         item.content.en = enResult.content;
+        item.contentDiv = enResult.contentDiv;
         await sleep(5000); // 5 second delay
         
         // If German version exists, get it too
         if (item.languages.includes('de')) {
           const deResult = await getNewsDetail(page, item.url, 'de');
           item.content.de = deResult.content;
+          item.contentDiv_de = deResult.contentDiv;
           item.headlineDE = deResult.headline;
           await sleep(5000);
         }
